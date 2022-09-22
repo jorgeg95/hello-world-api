@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.api.name }}
+  namespace: {{ .Values.api.namespace }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.api.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.api.name }}
+    spec:
+      containers:
+      - name: api
+        image: {{ .Values.api.image }}
+        imagePullPolicy: {{ .Values.api.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: DB_USER
+          value: {{ .Values.DB_USER }}
+        - name: DB_PASSWORD
+          value: {{ .Values.DB_PASSWORD }}
+        - name: DB_NAME
+          value: {{ .Values.DB_NAME }}
+        - name: DB_HOST
+          value: db-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.api.name }}-service
+  namespace: {{ .Values.api.namespace }}
+  labels:
+    app: {{ .Values.api.name }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 31000
+  type: NodePort
+  selector:
+    app: {{ .Values.api.name }}
+
+---
+{{- if .Values.api.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.api.name }}-hpa
+  namespace: {{ .Values.api.namespace }}
+  labels:
+    app: {{ .Values.api.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.api.name }}
+  minReplicas: {{ .Values.api.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.api.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.api.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          averageUtilization: {{ .Values.api.autoscaling.targetCPUUtilizationPercentage }}
+          type: Utilization
+    {{- end }}
+    {{- if .Values.api.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          averageUtilization: {{ .Values.api.autoscaling.targetMemoryUtilizationPercentage }}
+          type: Utilization
+    {{- end }}
+{{- end }}

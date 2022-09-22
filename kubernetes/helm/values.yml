@@ -1,0 +1,19 @@
+api:
+  name: hello-world-api
+  namespace: default
+  replicaCount: 1
+  image: hello-world-api:latest
+  imagePullPolicy: Never #to source local image
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 50
+    # If memory metrics should be used
+    #targetMemoryUtilizationPercentage: 50
+
+db:
+  name: db
+  namespace: default
+  replicaCount: 1
+  image: postgres
