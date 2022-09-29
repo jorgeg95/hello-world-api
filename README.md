@@ -30,7 +30,7 @@ You can use Kubernetes to more easily deploy, manage, automate and scale the WEB
 
 I used Helm to manage the deployment to Kubernetes since it helps to define, install, and upgrade Kubernetes based applications providing interesting features such as rolling upgrades of the application without downtime, speccially useful for production environments.
 
-To deploy the WEB API and Database on Kubernetes locally, with Docker Desktop, you can use the Helm chart provided in the folder ``kubernetes/helm``, and run the command: ``make helm install``. 
+To deploy the WEB API and Database on Kubernetes locally, with Docker Desktop, you can use the Helm chart provided in the folder ``kubernetes/helm``, and run the command: ``make helm-install``. 
 On a Production environment you can use the Helm chart as well but you will need to push your custom WEB API Docker image to a registry in order to provide Kubernetes nodes a way pull it when deploying the container. By default kubernetes uses docker.io public registry. 
 
 For the WEB API, a deployment was used since it is stateless and to ensure that a minimum number of replicas, as configured, are up and running even in a case of failure such as a node being down. Apart from that it can be easily scaled to more replicas if needed to serve more client traffic. For the Database, a deployment was used as well since this is a simple exercise, however, in a Production environment it would make more sense to deploy the Database as a ``StatefulSet``, so the pod replicas are aware of the state, and with persistent storage so no data is lost in case of a pod being shutdown or fails.
